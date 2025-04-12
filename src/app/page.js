@@ -1,103 +1,185 @@
+"use client"
 import Image from "next/image";
+import { useState, useEffect, useContext } from "react";
+import { useRouter } from "next/navigation";
+import { GlobalContext } from "@/context";
+import HomeSkeleton from "@/components/skeleton/homeskeleton";
+
+
+const categories = [
+  "Self-help",
+  "Fiction",
+  "Biography",
+  "Finance",
+  "Productvity"
+
+
+]
+
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const router = useRouter()
+  const [blogData, setBlogData] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [email ,setEmail] = useState('')
+  const {  query } = useContext(GlobalContext)
+  useEffect(() => {
+    async function fetchblog() {
+      setLoading(true)
+      try {
+        const res = await fetch("/api/client/get")
+        const data = await res.json()
+        setBlogData(data.blogs)
+        setLoading(false)
+      } catch (error) {
+        console.log("failed to fetch", error)
+      }
+    }
+    fetchblog()
+  }, [])
+// subscribe
+ 
+const subscribebtn = async () => {
+  if (!email) return alert("Please enter your email.")
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+  try {
+    const res = await fetch("/api/subscribe", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    })
+
+    const data = await res.json()
+
+    if (res.ok) {
+      console.log("Thank you for subscribing")
+      alert("Subscription successful!")
+      setEmail("") // clear the email input
+    } else {
+      console.log("Something went wrong:", data.message)
+      alert(data.message || "Something went wrong")
+    }
+  } catch (error) {
+    console.log("Fetching error:", error)
+    alert("Something went wrong. Please try again later.")
+  }
+}
+
+  // console.log(blogData)
+  const handleclick = (category) => {
+    router.push(`/service/${category}`)
+  }
+  if (loading) {
+    return (
+   <HomeSkeleton/>
+    )
+  }
+
+  return (
+    <main className="bg-white text-black ">
+      <div className="max-w-screen-xl mx-auto px-4 py-8 ">
+        {/* hero section */}
+        <section className="text-center py-5">
+          <h1 className=" text-2xl sm:text-3xl md:text-5xl font-bold">Discover the Best Book Summaries</h1>
+          <p className=" text-sm  md:text-lg text-gray-600 max-w-2xl mx-auto">Bite-sized insight from the world's most powerful book in minutes.</p>
+          <div className="flex justify-center items-center gap-4 p-3">
+            <button onClick={()=> router.push("/service/all-books")} className=" text-sm md:text-md bg-black text-white border-2 border-black font-bold rounded-md p-2 hover:scale-95 cursor-pointer ">Explore Summaries</button>
+           <a href="#newsletter"><button className=" text-sm md:text-md bg-black text-white border-2 border-black font-bold rounded-md p-2 hover:scale-95 cursor-pointer ">Subscribe to Newsletter</button></a> 
+          </div>
+        </section>,
+        {/* categories */}
+        <section>
+          <h1 className=" text-2xl md:text-3xl font-semibold mb-6">Popular Categories</h1>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
+            { categories.map((cat, index) =>
+              <button onClick={() => handleclick(cat)} key={index} className=" font-semibold  border-2 border-gray-400  rounded-2xl py-2 hover:scale-95  cursor-pointer" >{cat}</button>
+            )}
+          </div>
+        </section  >
+        {/* Letest summriize */}
+        <section id="letest" className="py-5">
+          <h1 className=" text-2xl md:text-3xl font-semibold mb-6">Latest Summaries</h1>
+          <div className="grid  grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 place-items-center  justify-center  items-start gap-3 md:gap-6 space-y-7">
+            {blogData.filter((item)=> item.title.toLowerCase().includes(query.toLowerCase())).map((book, index) => {
+              if (book.subCategory === "letest") {
+                return (
+                  <div
+                  key={index}
+                  onClick={() => router.push(`/service/summarypage/${book._id}`)}
+                  className="rounded-xl  p-2 shadow hover:scale-95 text-center overflow-hidden w-full max-w-[200px] mx-auto"
+                >
+                  <div className="aspect-[3/4] w-full mb-4 overflow-hidden rounded-md ">
+                    <img
+                      src={book.image}
+                      alt={book.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="h-20">
+                  <h3 className="font-semibold text-sm leading-tight">{book.title}</h3>
+                  <p className="text-gray-600">by:{book.author}</p>
+                  </div>
+                </div>
+
+
+
+                )
+              }
+            }
+            )}
+          </div>
+        </section>
+        {/* topPic */}
+        <section className="py-5">
+          <h1 className=" text-2xl md:text-3xl font-semibold mb-6">Top Books</h1>
+          <div className="grid  grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 place-items-center items-start gap-3 md:gap-6 space-y-7">
+            {blogData.filter((item)=> item.title.toLowerCase().includes(query.toLowerCase())).map((book, index) => {
+              if (book.subCategory === "topPic") {
+                return (
+                  <div
+                  key={index}
+                  onClick={() => router.push(`/service/summarypage/${book._id}`)}
+                  className="rounded-xl  p-2 shadow hover:scale-95 text-center overflow-hidden w-full max-w-[200px] mx-auto"
+                >
+                  <div className="aspect-[3/4] w-full mb-4 overflow-hidden rounded-md ">
+                    <img
+                      src={book.image}
+                      alt={book.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                <div className="h-20">
+                  <h3 className="font-semibold text-sm leading-tight">{book.title}</h3>
+                  <p className="text-gray-600">by:{book.author}</p>
+                  </div>
+                </div>
+
+
+                )
+              }
+            }
+            )}
+          </div>
+        </section>
+        {/* news Letter */}
+        <section id="newsletter" className=" bg-gray-100 rounded-xl text-center p-6">
+          <h1 className="text-xl font-semibold mb-2">Never miss a summary</h1>
+          <p className="text-gray-600 mb-4">Subscribe to our Newsletter and stay updated.</p>
+          <input type="email" placeholder="enter your email" className="px-4 py-2 rounded-xl md:rounded-l-xl  border border-gray-300"
+           value={email} onChange={(e)=> setEmail(e.target.value)}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          <button  onClick={subscribebtn} className="bg-black text-white font-semibold px-4 py-2 border border-gray-300">Subscribe</button>
+        </section>
+        {/* about */}
+        <section className=" p-6 text-center">
+          <h2 className="text-2xl font-semibold mb-2">About This Blog</h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            We share powerful summaries from books that can help you grow, learn, and transform your life. Whether you're into self-help, business, or fiction — there's something for everyone.
+          </p>
+        </section>
+      </div>
+    </main>
   );
 }
