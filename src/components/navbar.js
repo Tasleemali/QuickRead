@@ -27,7 +27,7 @@ const Navbar = () => {
     <div className='bg-white text-black'>
         <div className=' max-w-screen grid place-items-center  '>
             <div className=' px-5  w-full flex justify-between items-center  py-5 shadow-[0_4px_6px_-4px_rgba(0,0,0,0.3)] shadow-gray-100'>
-    <Link href={"/"}>  <span className=' font-bold text-3xl self-center whitespace-nowrap text-red-500'> <span className='text-black'>Quick</span>Read</span></Link> 
+    <Link href={"/"}>  <span className=' font-bold text-2xl md:text-3xl self-center whitespace-nowrap text-red-500'> <span className='text-black'>Quick</span>Read</span></Link> 
 {/* desktop navbar */}
 <div className='hidden md:flex'>
     <ul className='flex justify-between items-center gap-10'>
